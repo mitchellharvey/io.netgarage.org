@@ -1,0 +1,14 @@
+1.) The program runs the 'whoami' process but dosn't fully quallify the path
+
+2.) Create a small executable that prints level5 password and compile it with the name whoami in a /tmp directory
+   gcc ./whoami.c -o whoami
+
+3.) Launch the level but set the first search location in the PATH environment variable to our temp directory
+    PATH=./:$PATH /levels/level04
+
+4.) That will use our whoami executable and print level5's password, since the spawned child process inherits the access rights of the caller by default
+
+
+////////// OR
+
+1.) Just create a whoami file with executable privliges and have it cat the password

