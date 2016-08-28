@@ -1,8 +1,9 @@
 section .text
-global _start
+    global _start
 
 _start:
-mov esi, "/shh"
+# execve(/bin/bash, 0, 0)
+mov esi, "//sh"
 shr esi, 0x8 
 push esi 
 push "/bin"
