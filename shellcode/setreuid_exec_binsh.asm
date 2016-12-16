@@ -3,6 +3,7 @@ section .text
 
 _start:
 # geteuid()
+xor eax, eax
 mov al, 49
 int 0x80
 
