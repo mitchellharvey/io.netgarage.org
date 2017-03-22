@@ -3,7 +3,7 @@
 3.) So, get the offset from the stack position to the FILE pointer, then add 4.  If we give an integer for that offset, it should write the FD to 0!  Can we always get a consistant offset?
 
 5.) Offset 1208263568  this works with my test.  Can I modify the program to change it?
-    level10@io:/tmp/rar$ gcc ./test.c -O3 && ./a.out "asdfdd"
+    level10@io:/tmp/rar$ gcc ./level10.c -O3 && ./a.out "asdfdd"
     atoi value: 0
     Pointer Value: 0x804a008
     Stack Location: 0xbffffc58
@@ -56,6 +56,8 @@
     Result:
         AveryLoNgPassword!!
 
+    (NOTE: So looking at the difference, the difference is 16, or the stack alignment..  If I think the stack positions are changing a bit on me, I should probably check in increments of
+    the stack alignment value for more intelligent guessing)
 
 - Now run it with the proper password :D
 
