@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "$1" > /tmp/b
+nasm -f elf32 /tmp/b -o /tmp/b.o
+echo -n "Bytecode: "
+for i in `objdump -d /tmp/b.o | tr '\t' ' ' | tr ' ' '\n' | egrep '^[0-9a-f]{2}$' ` ; 
+do
+    echo -n "$i ";
+done
+echo
